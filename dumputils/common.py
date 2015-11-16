@@ -192,15 +192,21 @@ def dupsysfd2file(fn):
     except IOError as e:
         sys.exit(1)
 
-def daemon_start(log_file):
+def daemon_start(log_file, pid_file):
     if os.name != 'posix':
         logging.warn('daemon mode is only supported on Unix')
         return
 
     def handle_exit(signum, _):
+        try: os.remove(pid_file)
+        except OSError: pass
         if signum == signal.SIGTERM:
             sys.exit(0)
         sys.exit(1)
+
+    if os.path.exists(pid_file):
+        logging.warn('process is already running')
+        sys.exit(2)
 
     signal.signal(signal.SIGINT, handle_exit)
     signal.signal(signal.SIGTERM, handle_exit)
@@ -211,6 +217,7 @@ def daemon_start(log_file):
 
     if pid > 0:
         # parent waits for its child
+        file(pid_file, "w+").write("%s\n" % str(pid))
         time.sleep(5)
         sys.exit(0)
 
@@ -221,6 +228,6 @@ def daemon_start(log_file):
     signal.signal(signal.SIG_IGN, signal.SIGHUP)
 
     print('started')
-    os.kill(ppid, signal.SIGTERM)
+    #os.kill(ppid, signal.SIGTERM)
 
     dupsysfd2file(log_file)

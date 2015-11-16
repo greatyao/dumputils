@@ -120,7 +120,7 @@ def main():
     logging.basicConfig(level = logging.INFO,
                         format='%(asctime)s %(levelname)-8s %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
-    daemon_start('/var/log/dumpclient.log')
+    daemon_start('/var/log/dumpclient.log', '/var/run/dumpclient.pid')
 
     os.chdir(RDBPath)
     while True:
@@ -128,7 +128,6 @@ def main():
         connect_to_server(sock, config['server'], config['port'])
         key = '%s:%s' % sock.getsockname()
         encryptor = Encryptor(key, common.METHOD)
-
         status = upload_to_server(sock, encryptor)
         if status == 0: break
 
