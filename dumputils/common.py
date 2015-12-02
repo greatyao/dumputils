@@ -227,6 +227,13 @@ def daemon_start(log_file, pid_file):
     os.setsid()
     signal.signal(signal.SIG_IGN, signal.SIGHUP)
 
+    def exit_handler():
+        try: os.remove(pid_file)
+        except OSError: pass
+ 
+    import atexit
+    atexit.register(exit_handler)
+
     print('started')
     #os.kill(ppid, signal.SIGTERM)
 
